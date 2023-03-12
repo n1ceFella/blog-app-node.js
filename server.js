@@ -38,7 +38,6 @@ _server.get("/posts", (req, res) => {
     })
 })
 
-
 _server.get("/posts/add", (req, res) => {
     res.sendFile(_path.join(__dirname, './views/addPost.html'));
 });
