@@ -38,6 +38,10 @@ _server.get("/posts", (req, res) => {
     })
 })
 
+_server.get("/posts/add", (req, res) => {
+    res.sendFile(_path.join(__dirname, './views/addPost.html'));
+});
+
 _server.get("/categories", (req, res) => {
     _blogService.getCategories().then((data) => {
         res.json(data);
