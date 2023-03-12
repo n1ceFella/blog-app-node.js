@@ -38,6 +38,13 @@ _server.get("/posts", (req, res) => {
     })
 })
 
+<<<<<<< HEAD
+=======
+_server.get("/posts/add", (req, res) => {
+    res.sendFile(_path.join(__dirname, './views/addPost.html'));
+});
+
+>>>>>>> 6a3d42243465928e456eff1ddf36aaecdcb45081
 _server.get("/categories", (req, res) => {
     _blogService.getCategories().then((data) => {
         res.json(data);
