@@ -8,6 +8,7 @@ const _blogService = require("./blog-service");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2
 const streamifier = require('streamifier');
+const exphbs = require('express-handlebars');
 const upload = multer(); // no { storage: storage } since we are not using disk storage
 
 cloudinary.config({
@@ -17,6 +18,32 @@ cloudinary.config({
     secure: true
 });
 
+//handlebars engine
+_server.engine('.hbs', exphbs.engine({ 
+    extname: '.hbs', 
+    defaultLayout: 'main',
+    helpers: {
+        navLink: function(url, options){
+            return '<li' + 
+                ((url == _server.locals.activeRoute) ? ' class="active" ' : '') + 
+                '><a href="' + url + '">' + options.fn(this) + '</a></li>';
+        },
+        equal: function (lvalue, rvalue, options) {
+            if (arguments.length < 3)
+                throw new Error("Handlebars Helper equal needs 2 parameters");
+            if (lvalue != rvalue) {
+                return options.inverse(this);
+            } else {
+                return options.fn(this);
+            }
+        },
+        safeHTML: function(context){
+            return stripJs(context);
+        }
+    }
+}));
+
+_server.set('view engine', '.hbs');
 
 const HTTP_PORT = process.env.PORT || 8080;
 _server.use(express.static('public')); //use of css
@@ -27,12 +54,25 @@ function onHttpStart() {
 
 //home page
 _server.get("/", (req, res) => {
-    res.redirect('/about');
+    res.render('about');
 });
 
 //about author
+// _server.get("/about", (req, res) => {
+//     res.sendFile(_path.join(__dirname, './views/about.html'));
+// });
 _server.get("/about", (req, res) => {
-    res.sendFile(_path.join(__dirname, './views/about.html'));
+    var someData = {
+        name: "Volodymyr",
+        age: 31,
+        occupation: "developer",
+        company: "self employed"
+    };
+    
+    res.render('about', {
+        data: someData,
+        layout: 'main.hbs' // do not use the default Layout (main.hbs)
+    });
 });
 
 //get published posts
