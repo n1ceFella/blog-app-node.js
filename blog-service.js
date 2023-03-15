@@ -43,3 +43,34 @@ module.exports.getCategories = function() {
         categories.length == 0 ? reject('No results returned') : resolve(categories) ; 
     })
 }
+
+module.exports.addPost = (postData) => {
+    return new Promise((resolve, reject) => {
+        postData.published = postData.published == null ? false : true;
+        postData.id = posts.length() + 1;
+        posts.push(postData);
+        resolve(postData);
+    });
+}
+
+module.exports.getPostsByCategory = (category) => {
+    var categoryList = posts.filter(element => element.category == category);
+    return new Promise((resolve, reject) => {
+        categoryList.length == 0 ? reject('No results returned') : resolve(categoryList); 
+    });
+}
+
+module.exports.getPostsByMinDate = (minDateStr) => {
+
+    var dateList = posts.filter(element => new Date(element.postDate) >= new Date(minDateStr));
+    return new Promise((resolve, reject) => {
+        dateList.length == 0 ? reject('No results returned') : resolve(dateList);
+    });
+}
+
+module.exports.getPostsById = (id) => {
+    var post = posts.filter(element => element.id == id);
+    return new Promise((resolve, reject) => {
+        post == null ? reject('No results returned') : resolve(post);
+    });
+}
