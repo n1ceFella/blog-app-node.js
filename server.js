@@ -40,7 +40,7 @@ _server.get("/blog", (req, res) => {
     _blogService.getPublishedPosts().then((data) => {
         res.json(data);
     }).catch((err) => {
-        return {"Error message": err.message};
+        res.json("Error message : " + err);
     })
 });
 
@@ -50,19 +50,19 @@ _server.get("/posts", (req, res) => {
         _blogService.getPostsByCategory(req.query.category).then((data) => {
             res.json(data);
         }).catch((err) => {
-            return {"Error message": err.message};
+            res.json("Error message : " + err);
         })
     } else if(req.query.minDate) {
         _blogService.getPostsByMinDate(req.query.minDate).then((data) => {
             res.json({data});
         }).catch((err) => {
-            return {"Error message": err.message};
+            res.json("Error message : " + err);
         })
     } else {
         _blogService.getAllPosts().then((data) => {
             res.json(data);
         }).catch((err) => {
-            return {"Error message": err.message};
+            res.json("Error message : " + err);
         })
     }
 });
@@ -77,7 +77,7 @@ _server.get("/categories", (req, res) => {
     _blogService.getCategories().then((data) => {
         res.json(data);
     }).catch((err) => {
-        return {"Error message": err.message};
+        res.json("Error message : " + err.message);
     })
 });
 
@@ -86,19 +86,19 @@ _server.get("/posts/:id", (req, res) => {
     _blogService.getPostsById(req.params.id).then((data) => {
         res.json(data);
     }).catch((err) => {
-        return {"Error message": err.message};
+        res.json("Error message : " + err);
     })
 });
 
 //add post and image and save it to cloudinary
-_server.post("/post/add", (req, res) => {
+_server.post("/posts/add",upload.single("featureImage") , (req, res) => {
     let streamUpload = (req) => {
         return new Promise((resolve, reject) => {
             let stream = cloudinary.uploader.upload_stream(
                 (error, result) => {
                     if (result) {
                         resolve(result);
-                    } else {
+                     } else {
                         reject(error);
                     }
                 }
@@ -107,19 +107,21 @@ _server.post("/post/add", (req, res) => {
             streamifier.createReadStream(req.file.buffer).pipe(stream);
         });
     };
+    
     async function upload(req) {
         let result = await streamUpload(req);
         console.log(result);
         return result;
-    }   
+    }
+    
     upload(req).then((uploaded)=>{
         req.body.featureImage = uploaded.url;
     
-    });
-    _blogService.addPost(req.body).then(() => {
-        res.redirect('/posts')
-    }).catch((error) => {
-        res.status(500).send(error)
+        _blogService.addPost(req.body).then(() => {
+            res.redirect('/posts')
+        }).catch((error) => {
+            res.status(500).send(error)
+        });
     });
 });
 

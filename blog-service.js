@@ -45,11 +45,13 @@ module.exports.getCategories = function() {
 }
 
 module.exports.addPost = (postData) => {
+    postData.id = posts.length + 1;
+    postData.published == null ? 
+    postData.published = false : postData.published = true;
+    
+    posts.push(postData);
     return new Promise((resolve, reject) => {
-        postData.published = postData.published == null ? false : true;
-        postData.id = posts.length() + 1;
-        posts.push(postData);
-        resolve(postData);
+        resolve();
     });
 }
 
