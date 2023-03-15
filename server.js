@@ -8,8 +8,9 @@ const _blogService = require("./blog-service");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2
 const streamifier = require('streamifier');
-const exphbs = require('express-handlebars');
 const upload = multer(); // no { storage: storage } since we are not using disk storage
+const exphbs = require('express-handlebars');
+const stripJs = require('strip-js');
 
 cloudinary.config({
     cloud_name: 'ditgfy779',
@@ -54,7 +55,7 @@ function onHttpStart() {
 
 //home page
 _server.get("/", (req, res) => {
-    res.render('about');
+    res.redirect('/about');
 });
 
 //about author
