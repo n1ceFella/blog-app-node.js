@@ -59,19 +59,10 @@ _server.get("/", (req, res) => {
 });
 
 //about author
-// _server.get("/about", (req, res) => {
-//     res.sendFile(_path.join(__dirname, './views/about.html'));
-// });
 _server.get("/about", (req, res) => {
-    var someData = {
-        name: "Volodymyr",
-        age: 31,
-        occupation: "developer",
-        company: "self employed"
-    };
     
     res.render('about', {
-        data: someData,
+        data: null,
         layout: 'main.hbs' // do not use the default Layout (main.hbs)
     });
 });
@@ -89,36 +80,40 @@ _server.get("/blog", (req, res) => {
 _server.get("/posts", (req, res) => {
     if(req.query.category){
         _blogService.getPostsByCategory(req.query.category).then((data) => {
-            res.json(data);
+            res.render("posts", {posts:data});
         }).catch((err) => {
-            res.json("Error message : " + err);
+            res.render("posts", {message: "no results"});
         })
     } else if(req.query.minDate) {
         _blogService.getPostsByMinDate(req.query.minDate).then((data) => {
-            res.json({data});
+            res.render("posts", {posts:data});
         }).catch((err) => {
-            res.json("Error message : " + err);
+            res.render("posts", {message: "no results"});
         })
     } else {
         _blogService.getAllPosts().then((data) => {
-            res.json(data);
+            res.render("posts", {posts:data});
         }).catch((err) => {
-            res.json("Error message : " + err);
+            res.render("posts", {message: "no results"});
         })
     }
 });
 
 //add post
 _server.get("/posts/add", (req, res) => {
-    res.sendFile(_path.join(__dirname, './views/addPost.html'));
+    //res.sendFile(_path.join(__dirname, './views/addPost.html'));
+    res.render('addPost', {
+        data: null,
+        layout: 'main.hbs' // do not use the default Layout (main.hbs)
+    });
 });
 
 //get all categories
 _server.get("/categories", (req, res) => {
     _blogService.getCategories().then((data) => {
-        res.json(data);
+        res.render("categories", {categories:data});
     }).catch((err) => {
-        res.json("Error message : " + err.message);
+        res.render("categories", {message: "no results"})
     })
 });
 
@@ -165,6 +160,14 @@ _server.post("/posts/add",upload.single("featureImage") , (req, res) => {
         });
     });
 });
+
+_server.use(function(req,res,next){
+    let route = req.path.substring(1);
+    app.locals.activeRoute = (route == "/") ? "/" : "/" + route.replace(/\/(.*)/, "");
+    app.locals.viewingCategory = req.query.category;
+    next();
+});
+
 
 //init app
 _blogService.initialize().then(() => {
