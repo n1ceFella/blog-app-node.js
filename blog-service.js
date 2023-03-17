@@ -93,7 +93,7 @@ module.exports.addPost = (postData) => {
     });
 }
 
-module.exports.getPostsByCategory = (category) => {
+module.exports.getPostsByCategory = (categoryID) => {
     return new Promise((resolve, reject) => {
         Post.findAll({
             where: {
@@ -108,7 +108,7 @@ module.exports.getPostsByCategory = (category) => {
     });
 }
 
-module.exports.getPublishedPostsByCategory = (category) => {
+module.exports.getPublishedPostsByCategory = (categoryID) => {
     return new Promise((resolve, reject) => {
         Post.findAll({
             where: {
@@ -144,7 +144,7 @@ module.exports.getPostById = (id) => {
     return new Promise((resolve, reject) => {
         Post.findOne({
             where: {
-                id: postID
+                id: id
             }
         }).then(function(data){
             resolve(data);
