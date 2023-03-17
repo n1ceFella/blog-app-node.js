@@ -11,6 +11,7 @@ const streamifier = require('streamifier');
 const upload = multer(); // no { storage: storage } since we are not using disk storage
 const exphbs = require('express-handlebars');
 const stripJs = require('strip-js');
+_server.use(express.urlencoded({extended: true}));
 
 cloudinary.config({
     cloud_name: 'ditgfy779',
@@ -134,19 +135,25 @@ _server.get('/blog', async (req, res) => {
 _server.get("/posts", (req, res) => {
     if(req.query.category){
         _blogService.getPostsByCategory(req.query.category).then((data) => {
-            res.render("posts", {posts:data});
+            if(data.length > 0)
+                res.render("posts", {posts:data});
+            else res.render("posts", {message: "no results"});
         }).catch((err) => {
             res.render("posts", {message: "no results"});
         })
     } else if(req.query.minDate) {
         _blogService.getPostsByMinDate(req.query.minDate).then((data) => {
-            res.render("posts", {posts:data});
+            if(data.length > 0)
+                res.render("posts", {posts:data});
+            else res.render("posts", {message: "no results"});
         }).catch((err) => {
             res.render("posts", {message: "no results"});
         })
     } else {
         _blogService.getAllPosts().then((data) => {
-            res.render("posts", {posts:data});
+            if(data.length > 0)
+                res.render("posts", {posts:data});
+            else res.render("posts", {message: "no results"});
         }).catch((err) => {
             res.render("posts", {message: "no results"});
         })
@@ -155,20 +162,34 @@ _server.get("/posts", (req, res) => {
 
 //add post
 _server.get("/posts/add", (req, res) => {
-    //res.sendFile(_path.join(__dirname, './views/addPost.html'));
-    res.render('addPost', {
-        data: null,
-        layout: 'main.hbs' // do not use the default Layout (main.hbs)
-    });
+    _blogService.getCategories().then((data) => {
+            res.render("addPost", {categories:data});
+    }).catch((err) => {
+        res.render("addPost", {categories:[]});
+    })
 });
 
 //get all categories
 _server.get("/categories", (req, res) => {
     _blogService.getCategories().then((data) => {
-        res.render("categories", {categories:data});
+        if(data.length > 0)
+            res.render("categories", {categories:data});
+        else res.render("categories", {message: "no results"});
     }).catch((err) => {
         res.render("categories", {message: "no results"})
     })
+});
+
+_server.get("/categories/add", function (req, res) {
+    res.render("addCategory");
+});
+
+_server.post("/categories/add", (req, res) => {
+    _blogService.addCategory(req.body).then(() => {
+        res.redirect("/categories");
+      }).catch((error) => {
+        res.status(500).send(error);
+      });
 });
 
 //get post by id
@@ -257,8 +278,29 @@ _server.post("/posts/add",upload.single("featureImage") , (req, res) => {
     });
 });
 
+_server.get("/categories/delete/:id", (req, res) => {
+    _blogService.deleteCategoryById(req.params.id).then(() => {
+        resolve();
+        res.redirect('/categories');
+    }).catch(() => {
+        res.status(500).send(error);
+        reject("Unable to Remove Category / Category not found)");
+    })
+});
 
+_server.get("/posts/delete/:id", (req, res) => {
+    _blogService.deletePostById(req.params.id).then(() => {
+        resolve();
+        res.redirect('/posts');
+    }).catch(() => {
+        res.status(500).send(error);
+        reject("Unable to Remove Post / Post not found)");
+    })
+});
 
+_server.get("*", (req, res) => {
+    res.sendFile(_path.join(__dirname, "./views/error.html"));
+})
 
 //init app
 _blogService.initialize().then(() => {

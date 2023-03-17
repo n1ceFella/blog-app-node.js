@@ -153,3 +153,43 @@ module.exports.getPostById = (id) => {
         });
     });
 }
+
+module.exports.addCategory = (categoryData) =>{
+    return new Promise((resolve, reject) => {
+        for (prop in categoryData) {
+            if(categoryData[prop] == ""){
+                categoryData[prop] = null;
+            }
+        }
+        Category.create({
+            category: categoryData.category
+        }).then(function (post) {
+            resolve(post)
+        }).catch(function(){
+            reject("unable to create category");
+        });
+    });
+}
+
+module.exports.deleteCategoryById = (categoryID) => {
+    return new Promise((resolve, reject) => {
+        Category.destroy({
+            where: { id: categoryID }
+        }).then(function (data) {
+            resolve(data)
+        }).catch(function(){
+            reject("error in category destroy method");
+        });
+    });
+}
+module.exports.deletePostById = (postID) => {
+    return new Promise((resolve, reject) => {
+        Post.destroy({
+            where: { id: postID }
+        }).then(function (data) {
+            resolve(data)
+        }).catch(function(){
+            reject("error in post destroy method");
+        });
+    });
+}
