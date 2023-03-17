@@ -280,21 +280,17 @@ _server.post("/posts/add",upload.single("featureImage") , (req, res) => {
 
 _server.get("/categories/delete/:id", (req, res) => {
     _blogService.deleteCategoryById(req.params.id).then(() => {
-        resolve();
         res.redirect('/categories');
     }).catch(() => {
         res.status(500).send(error);
-        reject("Unable to Remove Category / Category not found)");
     })
 });
 
 _server.get("/posts/delete/:id", (req, res) => {
     _blogService.deletePostById(req.params.id).then(() => {
-        resolve();
         res.redirect('/posts');
     }).catch(() => {
         res.status(500).send(error);
-        reject("Unable to Remove Post / Post not found)");
     })
 });
 
