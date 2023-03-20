@@ -345,7 +345,7 @@ _server.post("/register", (req, res) => {
 });
  
 _server.post("/login", (req, res) => {
-    req.body.userAgent = req.get('User-Agent');
+    req.body.userAgent = req.get('User-Agent'); 
         authData.checkUser(req.body).then((user) => {
             req.session.user = {
                 userName: user.userName, // authenticated user's userName
