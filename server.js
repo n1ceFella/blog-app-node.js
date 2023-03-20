@@ -12,6 +12,7 @@ const upload = multer(); // no { storage: storage } since we are not using disk 
 const exphbs = require('express-handlebars');
 const stripJs = require('strip-js');
 const authData = require('./auth-service.js');
+const clientSessions = require("client-sessions");
 _server.use(express.urlencoded({extended: true}));
 
 cloudinary.config({
@@ -58,13 +59,7 @@ _server.set('view engine', '.hbs');
 const HTTP_PORT = process.env.PORT || 8080;
 _server.use(express.static('public')); //use of css
 
-//session middleware
-_server.use(clientSessions({
-    cookieName: "session", // this is the object name that will be added to 'req'
-    secret: "week10example_web322", // this should be a long un-guessable string.
-    duration: 2 * 60 * 1000, // duration of the session in milliseconds (2 minutes)
-    activeDuration: 1000 * 60 // the session will be extended by this many ms each request (1 minute)
-}));
+
 
 _server.use(function(req, res, next) {
     res.locals.session = req.session;
@@ -74,6 +69,14 @@ _server.use(function(req, res, next) {
 function onHttpStart() {
     console.log("Express http server listening on port: " + HTTP_PORT);
 }
+
+//session middleware
+_server.use(clientSessions({
+    cookieName: "session", // this is the object name that will be added to 'req'
+    secret: "some_random_session", // this should be a long un-guessable string.
+    duration: 2 * 60 * 1000, // duration of the session in milliseconds (2 minutes)
+    activeDuration: 1000 * 60 // the session will be extended by this many ms each request (1 minute)
+}));
 
 _server.use(function(req,res,next){
     let route = req.path.substring(1);
@@ -315,6 +318,46 @@ _server.get("/posts/delete/:id", ensureLogin, (req, res) => {
         res.status(500).send(error);
     })
 });
+
+_server.get("/login", function (req, res) {
+    res.render("login");
+});
+
+_server.get("/register", function (req, res) {
+    res.render("register");
+});
+
+_server.get("/logout", function (req, res) {
+    req.session.reset();
+    res.redirect("/");
+});
+
+_server.get("/userHistory", function (req, res) {
+    res.render("userHistory");
+});
+
+_server.post("/register", (req, res) => {
+    authData.registerUser(req.body).then(() => {
+        res.render("register", {successMessage: "User created"});
+      }).catch((err) => {
+        res.render("register", {errorMessage: err, userName: req.body.userName});
+      });
+});
+ 
+_server.post("/login", (req, res) => {
+    req.body.userAgent = req.get('User-Agent');
+        authData.checkUser(req.body).then((user) => {
+            req.session.user = {
+                userName: user.userName, // authenticated user's userName
+                email: user.email,// authenticated user's email
+                loginHistory: user.loginHistory// authenticated user's loginHistory
+            }
+            res.redirect("/posts");
+        }).catch((err) => {
+        res.render("login", {errorMessage: err, userName: req.body.userName});
+    });
+});
+
 
 _server.get("*", (req, res) => {
     res.sendFile(_path.join(__dirname, "./views/error.html"));
